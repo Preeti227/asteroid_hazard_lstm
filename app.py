@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
-
+from tensorflow.keras.callbacks import EarlyStopping, LearningRateScheduler
 
 # Load data
 df = pd.read_csv("nasa.csv")
@@ -90,3 +90,17 @@ lstm_model.compile(
     loss='binary_crossentropy',
     metrics=['accuracy']
 )
+
+def scheduler(epoch, lr):
+    return lr if epoch < 10 else lr * tf.math.exp(-0.1).numpy()
+
+history = lstm_model.fit(
+    X_train_lstm, y_train,
+    epochs=100,
+    validation_data=(X_test_lstm, y_test),
+    callbacks=[
+        EarlyStopping(patience=10),
+        LearningRateScheduler(scheduler)
+    ]
+)
+
