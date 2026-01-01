@@ -150,3 +150,6 @@ explanation = explainer.explain_instance(
 )
 
 print(explanation.as_list())
+
+lstm_model.save("lstm_asteroid_model.h5")
+print("Model saved")
