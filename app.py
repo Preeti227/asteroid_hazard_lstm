@@ -9,6 +9,9 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
 from tensorflow.keras.callbacks import EarlyStopping, LearningRateScheduler
 from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
+import lime
+import lime.lime_tabular
+import random
 
 # Load data
 df = pd.read_csv("nasa.csv")
@@ -122,3 +125,28 @@ plt.plot(fpr, tpr, label=f"AUC = {roc_auc:.4f}")
 plt.plot([0, 1], [0, 1], '--')
 plt.legend()
 plt.show()
+
+class LSTMWrapper:
+    def __init__(self, model):
+        self.model = model
+
+    def predict(self, data):
+        reshaped = data.reshape((data.shape[0], 1, data.shape[1]))
+        prob_pos = self.model.predict(reshaped)
+        return np.hstack((1 - prob_pos, prob_pos))
+
+explainer = lime.lime_tabular.LimeTabularExplainer(
+    training_data=X_train_scaled,
+    feature_names=X.columns.tolist(),
+    class_names=['Not Hazardous', 'Hazardous'],
+    mode='classification'
+)
+
+idx = random.randint(0, X_test_scaled.shape[0] - 1)
+explanation = explainer.explain_instance(
+    X_test_scaled[idx],
+    LSTMWrapper(lstm_model).predict,
+    num_features=10
+)
+
+print(explanation.as_list())
