@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense, Dropout
+
 
 # Load data
 df = pd.read_csv("nasa.csv")
@@ -72,4 +75,18 @@ X_train_lstm = X_train_scaled.reshape(
 )
 X_test_lstm = X_test_scaled.reshape(
     X_test_scaled.shape[0], 1, X_test_scaled.shape[1]
+)
+
+lstm_model = Sequential([
+    LSTM(64, return_sequences=True, input_shape=(1, X_train_scaled.shape[1])),
+    Dropout(0.3),
+    LSTM(32),
+    Dropout(0.2),
+    Dense(1, activation='sigmoid')
+])
+
+lstm_model.compile(
+    optimizer='adam',
+    loss='binary_crossentropy',
+    metrics=['accuracy']
 )
