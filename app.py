@@ -41,3 +41,18 @@ df = df.drop(columns=[
     'Miss Dist.(Astronomical)', 'Orbit Uncertainity',
     'Semi Major Axis', 'Orbital Period'
 ])
+
+y = df['Hazardous'].astype(int)
+X = df.drop(columns=['Hazardous'])
+X = X.select_dtypes(include='number')
+
+# Boxplot visualization
+X_boxplot = X.copy()
+X_boxplot['Hazardous'] = y.values
+
+X_melted = pd.melt(X_boxplot.drop(columns='Hazardous'))
+
+plt.figure(figsize=(16, 6))
+sns.boxplot(x='variable', y='value', data=X_melted)
+plt.xticks(rotation=90)
+plt.show()
