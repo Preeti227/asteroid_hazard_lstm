@@ -4,9 +4,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
 from tensorflow.keras.callbacks import EarlyStopping, LearningRateScheduler
+from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
 
 # Load data
 df = pd.read_csv("nasa.csv")
@@ -104,3 +106,19 @@ history = lstm_model.fit(
     ]
 )
 
+loss, accuracy = lstm_model.evaluate(X_test_lstm, y_test, verbose=0)
+print(f"Test Accuracy: {accuracy * 100:.2f}%")
+
+y_pred = (lstm_model.predict(X_test_lstm) > 0.5).astype(int)
+
+print(classification_report(y_test, y_pred))
+print(confusion_matrix(y_test, y_pred))
+
+y_probs = lstm_model.predict(X_test_lstm).ravel()
+fpr, tpr, _ = roc_curve(y_test, y_probs)
+roc_auc = auc(fpr, tpr)
+
+plt.plot(fpr, tpr, label=f"AUC = {roc_auc:.4f}")
+plt.plot([0, 1], [0, 1], '--')
+plt.legend()
+plt.show()
